@@ -1,0 +1,3 @@
+# ics link
+
+https://cloud.timeedit.net/ju/web/open/ri6Y1y6tY1vZ2QQZ51nYQZ0Qumw5wXd5jZ12Z15Q807n82jQ79m6l9A414Q0299969842AED912E265Z30F9FtAEF1055B9BABC95.ics
