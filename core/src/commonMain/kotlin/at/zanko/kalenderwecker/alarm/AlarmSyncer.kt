@@ -4,7 +4,10 @@ import at.zanko.kalenderwecker.data.CalendarRepository
 import at.zanko.kalenderwecker.data.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.atStartOfDayIn
+import kotlinx.datetime.minus
 import kotlinx.datetime.TimeZone
 import kotlin.time.Clock
 
@@ -33,7 +36,21 @@ class AlarmSyncer(
         zone(),
     )
 
-    fun alarmFor(date: LocalDate): DayAlarm? = currentPlan().firstOrNull { it.date == date }
+    /**
+     * The alarm planned for [date], even if its time has already passed —
+     * needed when a ring is triggered at (or slightly after) the alarm time.
+     */
+    fun alarmFor(date: LocalDate): DayAlarm? {
+        val tz = zone()
+        val dayBefore = date.minus(DatePeriod(days = 1)).atStartOfDayIn(tz)
+        return planner.plan(
+            calendar.appointments.value,
+            settings.settings.value.copy(horizonDays = 3),
+            settings.overrides.value,
+            dayBefore,
+            tz,
+        ).firstOrNull { it.date == date }
+    }
 
     suspend fun sync(): List<DayAlarm> {
         val plan = currentPlan()

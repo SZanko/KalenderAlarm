@@ -90,7 +90,11 @@ class AlarmSyncerTest {
     @Test
     fun gIVEN_date_WHEN_alarmFor_THEN_thatDaysAlarm() {
         assertEquals(monday, syncer.alarmFor(monday)?.date)
-        assertEquals(null, syncer.alarmFor(LocalDate.parse("2027-01-01")))
+        assertEquals(
+            at.zanko.kalenderwecker.alarm.AlarmSource.Fallback,
+            syncer.alarmFor(LocalDate.parse("2027-01-01"))?.source,
+            "dates beyond the horizon still get their computed alarm",
+        )
     }
 
     @Test
@@ -98,5 +102,15 @@ class AlarmSyncerTest {
         settings.setEnabled(monday, false)
 
         assertFalse(syncer.plan.first().single { it.date == monday }.enabled)
+    }
+
+    @Test
+    fun gIVEN_alarmTimeJustPassed_WHEN_alarmFor_THEN_stillFound() = runTest {
+        settings.cachedIcs = ultraShort
+        clock.now = Instant.parse("2026-11-02T05:46:00Z") // one minute after Monday's 06:45 alarm
+
+        val alarm = syncer.alarmFor(monday)
+
+        assertEquals(Instant.parse("2026-11-02T05:45:00Z"), alarm?.time)
     }
 }
