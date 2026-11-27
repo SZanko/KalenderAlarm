@@ -1,3 +1,47 @@
+# KalenderWecker
+
+Wake-up alarms driven by your Jönköping University TimeEdit schedule.
+
+Paste your TimeEdit calendar link (the `.ics` subscription link, the `.html` schedule page or a
+`webcal://` link) and the app lists your upcoming classes. Every day gets one alarm:
+
+- **first class before "morning ends at"** (default 12:00) → alarm = class start − offset (default 1 h 30 min)
+- **otherwise** → the fallback alarm (default 08:00, on Mon–Fri by default)
+
+Each day's alarm can be switched on/off, you can pick any audio file as the wake-up sound, and
+alarms snooze for 5 minutes / stop by themselves after 10 minutes.
+
+![Desktop home screen](docs/superpowers/desktop-home.png)
+
+## How alarms ring
+
+| Platform | Mechanism | Rings when app is closed? |
+|----------|-----------|---------------------------|
+| Android  | `AlarmManager.setAlarmClock` → foreground service + full-screen lock-screen activity; re-planned after reboot / time change; TimeEdit refreshed every 6 h (WorkManager) | yes |
+| Linux desktop with systemd | one `kalenderwecker-alarm-<date>.timer` per alarm in `~/.config/systemd/user/`, which launches the app with `--ring <date>`; `kalenderwecker-refresh.timer` runs `--refresh` every 6 h | yes (machine must be awake; user timers can't wake it from suspend) |
+| Other desktops | in-process timer | only while the window is open |
+
+Inspect the desktop timers with `systemctl --user list-timers 'kalenderwecker*'`.
+Desktop settings live in `~/.config/kalenderwecker/settings.properties`.
+
+The timers start the app with the command it was last launched with (`./gradlew run` → the
+build-directory classpath). For an installed build set `KALENDERWECKER_EXEC` to the launcher,
+open the app once, and the units are rewritten.
+
+On Android the app asks for notifications; the home screen shows a banner if notifications,
+exact alarms or full-screen alarms are not allowed.
+
+## Development
+
+```
+nix develop        # or: direnv allow  — JDK 25, Gradle, adb, Compose Desktop native libs
+./gradlew :core:jvmTest :app:shared:jvmTest :app:desktopApp:test :app:androidApp:testDebugUnitTest
+```
+
+Design and plan: [`docs/superpowers/specs`](docs/superpowers/specs), [`docs/superpowers/plans`](docs/superpowers/plans).
+
+## Project layout
+
 This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM), Server.
 
 * [/app/iosApp](./app/iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform,
@@ -37,7 +81,8 @@ Use the run configurations provided by the run widget in your IDE's toolbar. You
 Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 - Android tests: `./gradlew :app:shared:testAndroidHostTest`
-- Desktop tests: `./gradlew :app:shared:jvmTest`
+- Desktop tests: `./gradlew :app:shared:jvmTest :app:desktopApp:test`
+- Core logic (planner, repositories): `./gradlew :core:jvmTest`
 - Server tests: `./gradlew :server:test`
 - Web tests:
   - Wasm target: `./gradlew :app:shared:wasmJsTest`
