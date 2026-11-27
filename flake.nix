@@ -38,14 +38,36 @@
         in
         {
           gradle = prev.gradle.override { java = jdk; };
+          gradle_9 = prev.gradle_9.override { java = jdk; };
           kotlin = prev.kotlin.override { jre = jdk; };
         };
 
       devShells = forEachSupportedSystem (
         { pkgs, system }:
+        let
+          jdk = pkgs."jdk${toString javaVersion}";
+          # Native libraries Compose Desktop (Skiko/AWT) and javax.sound need on NixOS
+          desktopLibs = with pkgs; [
+            libGL
+            libx11
+            libxext
+            libxrender
+            libxtst
+            libxi
+            libxrandr
+            fontconfig
+            freetype
+            alsa-lib
+            libpulseaudio
+          ];
+        in
         {
           default = pkgs.mkShellNoCC {
+            JAVA_HOME = jdk.home;
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath desktopLibs;
             packages = with pkgs; [
+              jdk
+              android-tools
               gcc
               gradle_9
               kotlin
