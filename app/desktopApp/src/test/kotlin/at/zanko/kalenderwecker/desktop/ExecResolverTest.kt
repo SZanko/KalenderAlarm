@@ -32,4 +32,12 @@ class ExecResolverTest {
     fun gIVEN_nothingKnown_WHEN_resolve_THEN_empty() {
         assertEquals(emptyList(), resolveExec(emptyMap(), null, emptyList()))
     }
+
+    @Test
+    fun gIVEN_jvmProperties_WHEN_jvmExec_THEN_javaWithClasspathAndMainClass() {
+        assertEquals(
+            listOf("/jdk/bin/java", "-cp", "/a.jar:/b.jar", "at.zanko.kalenderwecker.MainKt"),
+            jvmExec(javaHome = "/jdk", classPath = "/a.jar:/b.jar", mainClass = "at.zanko.kalenderwecker.MainKt"),
+        )
+    }
 }

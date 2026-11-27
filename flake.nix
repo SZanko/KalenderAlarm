@@ -46,7 +46,9 @@
         { pkgs, system }:
         let
           jdk = pkgs."jdk${toString javaVersion}";
-          # Native libraries Compose Desktop (Skiko/AWT) and javax.sound need on NixOS
+          # Native libraries Compose Desktop (Skiko/AWT) needs on NixOS.
+          # alsa-lib/libpulseaudio are deliberately NOT here: a store libasound on
+          # LD_LIBRARY_PATH hides the system PipeWire ALSA plugin from Java Sound.
           desktopLibs = with pkgs; [
             libGL
             libx11
@@ -57,8 +59,6 @@
             libxrandr
             fontconfig
             freetype
-            alsa-lib
-            libpulseaudio
           ];
         in
         {
