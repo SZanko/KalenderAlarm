@@ -32,6 +32,12 @@ jobs:
       # Gradle dependency/build cache; works for ./gradlew run inside `nix develop`.
       - uses: gradle/actions/setup-gradle@v6
 
+      # Ubuntu 24.04 runners block unprivileged user namespaces via AppArmor, so the
+      # Nix-store Chromium falls back to a setuid sandbox it can't have and aborts.
+      # Re-allowing them keeps Chrome's sandbox on (no --no-sandbox needed).
+      - name: Allow user namespaces for headless Chromium
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Unit tests (core, shared, desktop, Android, server, browser)
         run: >
           nix develop --command ./gradlew --console=plain --continue
