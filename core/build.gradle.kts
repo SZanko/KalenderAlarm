@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidMultiplatformLibrary)
     alias(libs.plugins.kotlinx.resources)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -34,13 +35,38 @@ kotlin {
     }
     sourceSets {
         commonMain.dependencies {
-            // put your Multiplatform dependencies here
-            implementation(libs.kotlinx.datetime)
+            api(libs.kotlinx.datetime)
+            api(libs.kotlinx.coroutines.core)
+            api(libs.ktor.clientCore)
+            api(libs.koin.core)
+            api(libs.multiplatform.settings)
+            implementation(libs.multiplatform.settings.noArg)
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.okio)
         }
         commonTest.dependencies {
             implementation(libs.kotlinx.resources)
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.ktor.clientMock)
+            implementation(libs.multiplatform.settings.test)
+            implementation(libs.turbine)
+            implementation(libs.koin.test)
+        }
+        jvmMain.dependencies {
+            implementation(libs.ktor.clientOkhttp)
+        }
+        androidMain.dependencies {
+            implementation(libs.ktor.clientOkhttp)
+        }
+        iosMain.dependencies {
+            implementation(libs.ktor.clientDarwin)
+        }
+        jsMain.dependencies {
+            implementation(libs.ktor.clientJs)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.ktor.clientJs)
         }
     }
 }

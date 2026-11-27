@@ -62,9 +62,17 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            api(libs.koin.compose)
+            api(libs.koin.compose.viewmodel)
+            implementation(libs.filekit.dialogs.compose)
+            implementation(libs.compose.materialIconsExtended)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+            implementation(libs.multiplatform.settings.test)
+            implementation(libs.turbine)
+            implementation(libs.ktor.clientMock)
         }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
