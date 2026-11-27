@@ -29,7 +29,7 @@ class AlarmActivity : ComponentActivity() {
 
         val zone = TimeZone.currentSystemDefault()
         val now = Clock.System.now()
-        val alarm = syncer.alarmFor(now.toLocalDateTime(zone).date)
+        val alarm = if (isUserUnlocked(this)) syncer.alarmFor(now.toLocalDateTime(zone).date) else null
         setContent {
             KalenderWeckerTheme {
                 RingScreen(

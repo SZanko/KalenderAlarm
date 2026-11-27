@@ -30,8 +30,10 @@ import kotlin.time.Duration.Companion.minutes
 
 /** Plays the alarm, shows the full-screen notification and handles Dismiss/Snooze. */
 class AlarmService : Service() {
+    // Resolved lazily: credential storage is unreadable before the first unlock.
     private val syncer: AlarmSyncer by inject()
     private val settings: SettingsRepository by inject()
+    private val scheduler: AndroidAlarmScheduler by inject()
     private var player: MediaPlayer? = null
     private val handler = Handler(Looper.getMainLooper())
     private var date: LocalDate? = null
@@ -53,15 +55,28 @@ class AlarmService : Service() {
     private fun startRinging(intent: Intent?) {
         val day = intent?.getStringExtra(EXTRA_DATE)?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
         val force = intent?.getBooleanExtra(EXTRA_FORCE, false) ?: false
-        val alarm = day?.let(syncer::alarmFor)
-        val subtitle = alarm?.let { formatAlarmSubtitle(it, settings.settings.value.offsetMinutes) }
-        startForeground(NOTIFICATION_ID, notification(subtitle), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
-        if (day == null || !(force || alarm?.enabled == true)) {
+        startForeground(NOTIFICATION_ID, notification(null), ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
+        val unlocked = isUserUnlocked(this)
+        val allowed = when {
+            day == null -> false
+            unlocked -> force || syncer.alarmFor(day)?.enabled == true
+            else -> lockedRingAllowed(scheduler.planned(), day, force)
+        }
+        if (!allowed) {
             stopRinging()
             return
         }
+        if (unlocked) {
+            syncer.alarmFor(day!!)?.let { alarm ->
+                getSystemService(NotificationManager::class.java).notify(
+                    NOTIFICATION_ID,
+                    notification(formatAlarmSubtitle(alarm, settings.settings.value.offsetMinutes)),
+                )
+            }
+        }
         date = day
-        play(settings.settings.value.soundUri)
+        // Before the first unlock the chosen file may be unreadable; play() falls back to the default alarm.
+        play(if (unlocked) settings.settings.value.soundUri else null)
         vibrate()
         handler.postDelayed(::stopRinging, AUTO_STOP.inWholeMilliseconds)
     }

@@ -9,11 +9,13 @@ import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val androidModule = module {
+    // Credential-protected: only resolved once unlocked (direct-boot paths use AndroidAlarmScheduler alone).
     single<Settings> {
         val context = androidContext()
-        SharedPreferencesSettings(deviceProtectedPrefs(context, "${context.packageName}_preferences"))
+        SharedPreferencesSettings(credentialPrefs(context, "${context.packageName}_preferences"))
     }
-    single<AlarmScheduler> { AndroidAlarmScheduler(androidContext()) }
+    single { AndroidAlarmScheduler(androidContext()) }
+    single<AlarmScheduler> { get<AndroidAlarmScheduler>() }
 }
 
 class KalenderWeckerApplication : Application() {

@@ -5,13 +5,20 @@ import android.content.SharedPreferences
 import android.os.UserManager
 
 /**
- * Settings, toggles and the cached schedule live in device-protected storage
- * so alarms can be re-planned after a reboot before the user unlocks.
+ * Device-protected storage is readable before the first unlock after a
+ * reboot. Only the armed alarm times live there; settings, the TimeEdit link
+ * and the cached schedule stay in credential-protected storage.
  */
-fun deviceProtectedPrefs(context: Context, name: String): SharedPreferences {
-    val deviceContext = context.createDeviceProtectedStorageContext()
-    if (isUserUnlocked(context)) deviceContext.moveSharedPreferencesFrom(context, name)
-    return deviceContext.getSharedPreferences(name, Context.MODE_PRIVATE)
+fun deviceProtectedPrefs(context: Context, name: String): SharedPreferences =
+    context.createDeviceProtectedStorageContext().getSharedPreferences(name, Context.MODE_PRIVATE)
+
+/**
+ * Credential-protected settings. Moves back data an earlier build kept in
+ * device-protected storage. Must only be called once the user has unlocked.
+ */
+fun credentialPrefs(context: Context, name: String): SharedPreferences {
+    context.moveSharedPreferencesFrom(context.createDeviceProtectedStorageContext(), name)
+    return context.getSharedPreferences(name, Context.MODE_PRIVATE)
 }
 
 fun isUserUnlocked(context: Context): Boolean =
