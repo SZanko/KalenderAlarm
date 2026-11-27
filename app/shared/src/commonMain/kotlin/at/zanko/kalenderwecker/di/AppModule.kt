@@ -15,5 +15,8 @@ val appModule = module {
 }
 
 /** Starts Koin with the shared modules plus the platform's (which provides `AlarmScheduler`). */
-fun initKoin(vararg platform: Module): KoinApplication =
-    startKoin { modules(listOf(coreModule, appModule) + platform) }
+fun initKoin(vararg platform: Module, config: KoinApplication.() -> Unit = {}): KoinApplication =
+    startKoin {
+        config()
+        modules(listOf(coreModule, appModule) + platform)
+    }
