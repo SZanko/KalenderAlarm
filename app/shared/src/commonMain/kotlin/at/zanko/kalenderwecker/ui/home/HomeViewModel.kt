@@ -25,6 +25,7 @@ data class HomeUiState(
     val isRefreshing: Boolean = false,
     val error: RefreshError? = null,
     val hasUrl: Boolean = false,
+    val offsetMinutes: Int = 90,
 )
 
 class HomeViewModel(
@@ -51,6 +52,7 @@ class HomeViewModel(
             isRefreshing = t.refreshing,
             error = t.error,
             hasUrl = current.icsUrl.isNotBlank(),
+            offsetMinutes = current.offsetMinutes,
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState())
 
