@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      # Same toolchain as local development: the flake's dev shell (JDK, Gradle, adb).
+      - uses: cachix/install-nix-action@v32
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check flake
+        run: nix flake check
+
+      # Gradle dependency/build cache; works for ./gradlew run inside `nix develop`.
+      - uses: gradle/actions/setup-gradle@v6
+
+      - name: Unit tests (core, shared, desktop, Android, server)
+        run: >
+          nix develop --command ./gradlew --console=plain --continue
+          :core:jvmTest
+          :app:shared:jvmTest
+          :app:desktopApp:test
+          :app:androidApp:testDebugUnitTest
+          :server:test
+
+      - name: Build Android APK and web targets
+        run: >
+          nix develop --command ./gradlew --console=plain
+          :app:androidApp:assembleDebug
+          :app:shared:compileKotlinJs
+          :app:shared:compileKotlinWasmJs
+          :app:webApp:compileKotlinJs
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 14
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: androidApp-debug
+          path: app/androidApp/build/outputs/apk/debug/*.apk
+          retention-days: 14

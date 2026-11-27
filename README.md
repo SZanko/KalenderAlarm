@@ -38,6 +38,8 @@ nix develop        # or: direnv allow  — JDK 25, Gradle, adb, Compose Desktop 
 ./gradlew :core:jvmTest :app:shared:jvmTest :app:desktopApp:test :app:androidApp:testDebugUnitTest
 ```
 
+CI (`.github/workflows/ci.yml`) runs the same commands inside `nix develop` on every push to `master` and every pull request, and uploads the debug APK as an artifact.
+
 Design and plan: [`docs/superpowers/specs`](docs/superpowers/specs), [`docs/superpowers/plans`](docs/superpowers/plans).
 
 ## Project layout
