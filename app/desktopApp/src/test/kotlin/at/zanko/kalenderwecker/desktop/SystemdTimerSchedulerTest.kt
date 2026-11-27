@@ -81,4 +81,14 @@ class SystemdTimerSchedulerTest {
 
         assertTrue(nested.resolve("kalenderwecker-alarm-2026-11-30.timer").exists())
     }
+
+    @Test
+    fun gIVEN_enableFails_WHEN_schedule_THEN_throwsWithCommand() = runTest {
+        val failing = SystemdTimerScheduler(dir, { cmd -> if ("enable" in cmd) 1 else 0 }, listOf("/bin/kw")) {
+            TimeZone.UTC
+        }
+
+        val error = kotlin.test.assertFailsWith<SchedulingException> { failing.schedule(listOf(alarm("2026-11-30"))) }
+        assertTrue("enable" in error.message.orEmpty())
+    }
 }

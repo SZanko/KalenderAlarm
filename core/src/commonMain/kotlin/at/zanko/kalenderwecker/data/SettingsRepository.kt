@@ -11,6 +11,7 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
+import kotlin.time.Instant
 
 /** Persists user settings, per-day alarm toggles and the last fetched calendar. */
 class SettingsRepository(private val store: Settings) {
@@ -28,6 +29,13 @@ class SettingsRepository(private val store: Settings) {
         get() = store.getStringOrNull(KEY_ICS)
         set(value) {
             if (value == null) store.remove(KEY_ICS) else store.putString(KEY_ICS, value)
+        }
+
+    /** When the calendar was last fetched successfully; null = never. */
+    var lastRefresh: Instant?
+        get() = store.getStringOrNull(KEY_LAST_REFRESH)?.let { runCatching { Instant.parse(it) }.getOrNull() }
+        set(value) {
+            if (value == null) store.remove(KEY_LAST_REFRESH) else store.putString(KEY_LAST_REFRESH, value.toString())
         }
 
     fun update(transform: (AlarmSettings) -> AlarmSettings) {
@@ -61,5 +69,6 @@ class SettingsRepository(private val store: Settings) {
         const val KEY_SETTINGS = "settings"
         const val KEY_OVERRIDES = "overrides"
         const val KEY_ICS = "cachedIcs"
+        const val KEY_LAST_REFRESH = "lastRefresh"
     }
 }

@@ -30,10 +30,16 @@ class CalendarRepository(
     private val settings: SettingsRepository,
     private val zone: () -> TimeZone,
 ) {
-    private val _appointments = MutableStateFlow(
-        settings.cachedIcs?.let { runCatching { toAppointments(it) }.getOrNull() }.orEmpty()
-    )
+    private val _appointments = MutableStateFlow(readCache())
     val appointments: StateFlow<List<Appointment>> = _appointments.asStateFlow()
+
+    /** Re-reads the cached feed, e.g. after another process refreshed it. */
+    fun reloadFromCache() {
+        _appointments.value = readCache()
+    }
+
+    private fun readCache(): List<Appointment> =
+        settings.cachedIcs?.let { runCatching { toAppointments(it) }.getOrNull() }.orEmpty()
 
     suspend fun refresh(): Result<Unit> {
         val raw = settings.settings.value.icsUrl

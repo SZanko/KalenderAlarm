@@ -18,6 +18,8 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.time.Clock
+import kotlin.time.Duration.Companion.hours
+import kotlin.time.Instant
 
 data class HomeUiState(
     val sections: List<DaySection> = emptyList(),
@@ -26,7 +28,15 @@ data class HomeUiState(
     val error: RefreshError? = null,
     val hasUrl: Boolean = false,
     val offsetMinutes: Int = 90,
+    /** Last successful TimeEdit fetch; null = never. */
+    val lastRefresh: Instant? = null,
+    /** A link is set but the schedule hasn't been updated for [STALE_AFTER]. */
+    val scheduleStale: Boolean = false,
+    /** The platform refused the alarms (e.g. systemd); they may not ring. */
+    val schedulingError: String? = null,
 )
+
+val STALE_AFTER = 24.hours
 
 class HomeViewModel(
     private val syncer: AlarmSyncer,
@@ -44,15 +54,22 @@ class HomeViewModel(
         calendar.appointments,
         settings.settings,
         transient,
-    ) { plan, appointments, current, t ->
+        syncer.schedulingError,
+    ) { plan, appointments, current, t, schedulingError ->
         val tz = zone()
+        val now = clock.now()
+        val lastRefresh = settings.lastRefresh
+        val hasUrl = current.icsUrl.isNotBlank()
         HomeUiState(
-            sections = buildDaySections(plan, appointments, tz, clock.now().toLocalDateTime(tz).date),
+            sections = buildDaySections(plan, appointments, tz, now.toLocalDateTime(tz).date),
             nextAlarm = plan.firstOrNull { it.enabled },
             isRefreshing = t.refreshing,
             error = t.error,
-            hasUrl = current.icsUrl.isNotBlank(),
+            hasUrl = hasUrl,
             offsetMinutes = current.offsetMinutes,
+            lastRefresh = lastRefresh,
+            scheduleStale = hasUrl && !t.refreshing && (lastRefresh == null || now - lastRefresh > STALE_AFTER),
+            schedulingError = schedulingError,
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, HomeUiState())
 

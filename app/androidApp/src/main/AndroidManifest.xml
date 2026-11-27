@@ -36,6 +36,7 @@
 
         <activity
             android:name=".android.AlarmActivity"
+            android:directBootAware="true"
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleInstance"
@@ -45,17 +46,22 @@
 
         <service
             android:name=".android.AlarmService"
+            android:directBootAware="true"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />
 
         <receiver
             android:name=".android.AlarmReceiver"
+            android:directBootAware="true"
             android:exported="false" />
 
         <receiver
             android:name=".android.BootReceiver"
+            android:directBootAware="true"
             android:exported="true">
             <intent-filter>
+                <!-- Before first unlock after a reboot: re-plan from device-protected storage. -->
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.TIME_SET" />
                 <action android:name="android.intent.action.TIMEZONE_CHANGED" />

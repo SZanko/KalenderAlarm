@@ -96,4 +96,35 @@ class HomeViewModelTest {
         advanceUntilIdle()
         assertNull(vm.state.value.error)
     }
+
+    @Test
+    fun gIVEN_refreshKeepsFailing_WHEN_lastSuccessOver24hAgo_THEN_scheduleStale() = runTest(dispatcher) {
+        val graph = TestGraph(httpDispatcher = dispatcher).apply {
+            status = HttpStatusCode.NotFound
+            settings.lastRefresh = clock.now - kotlin.time.Duration.parse("30h")
+        }
+        val vm = vm(graph)
+        advanceUntilIdle()
+
+        assertTrue(vm.state.value.scheduleStale)
+        assertEquals(graph.settings.lastRefresh, vm.state.value.lastRefresh)
+    }
+
+    @Test
+    fun gIVEN_freshRefresh_WHEN_created_THEN_notStale() = runTest(dispatcher) {
+        val graph = TestGraph(httpDispatcher = dispatcher)
+        val vm = vm(graph)
+        advanceUntilIdle()
+
+        assertFalse(vm.state.value.scheduleStale)
+    }
+
+    @Test
+    fun gIVEN_schedulerFails_WHEN_synced_THEN_persistentSchedulingError() = runTest(dispatcher) {
+        val graph = TestGraph(httpDispatcher = dispatcher).apply { scheduler.failWith = "enable failed" }
+        val vm = vm(graph)
+        advanceUntilIdle()
+
+        assertEquals("enable failed", vm.state.value.schedulingError)
+    }
 }

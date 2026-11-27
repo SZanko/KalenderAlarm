@@ -43,8 +43,11 @@ fun main(args: Array<String>) {
     val koin = initKoin(desktopModule).koin
     when (val mode = parseArgs(args)) {
         DesktopMode.Refresh -> {
-            val ok = runBlocking { koin.get<AlarmSyncer>().refreshAndSync() }.isSuccess
-            exitProcess(if (ok) 0 else 1)
+            val syncer = koin.get<AlarmSyncer>()
+            val result = runBlocking { syncer.refreshAndSync() }
+            result.exceptionOrNull()?.let { System.err.println("KalenderWecker refresh failed: ${it.message}") }
+            syncer.schedulingError.value?.let { System.err.println("KalenderWecker could not set alarms: $it") }
+            exitProcess(if (result.isSuccess && syncer.schedulingError.value == null) 0 else 1)
         }
         is DesktopMode.Ring -> ringOnly(koin, mode)
         DesktopMode.Main -> mainWindow(koin)

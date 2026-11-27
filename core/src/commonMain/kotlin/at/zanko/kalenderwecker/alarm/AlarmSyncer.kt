@@ -2,7 +2,13 @@ package at.zanko.kalenderwecker.alarm
 
 import at.zanko.kalenderwecker.data.CalendarRepository
 import at.zanko.kalenderwecker.data.SettingsRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.flow.combine
 import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
@@ -52,15 +58,38 @@ class AlarmSyncer(
         ).firstOrNull { it.date == date }
     }
 
-    suspend fun sync(): List<DayAlarm> {
+    private val mutex = Mutex()
+
+    private val _schedulingError = MutableStateFlow<String?>(null)
+
+    /** Why the last attempt to hand alarms to the platform failed; null after a success. */
+    val schedulingError: StateFlow<String?> = _schedulingError.asStateFlow()
+
+    /**
+     * Re-reads persisted state (another process — desktop `--refresh` / GUI —
+     * may have changed it), plans and schedules. Serialized so an older plan
+     * can never overwrite a newer one. Scheduler failures are exposed via
+     * [schedulingError] rather than thrown.
+     */
+    suspend fun sync(): List<DayAlarm> = mutex.withLock {
+        settings.reload()
+        calendar.reloadFromCache()
         val plan = currentPlan()
-        scheduler.schedule(plan.filter { it.enabled })
-        return plan
+        try {
+            scheduler.schedule(plan.filter { it.enabled })
+            _schedulingError.value = null
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            _schedulingError.value = e.message ?: e.toString()
+        }
+        plan
     }
 
     /** Refreshes the calendar, then syncs — also when the refresh failed. */
     suspend fun refreshAndSync(): Result<Unit> {
         val result = calendar.refresh()
+        if (result.isSuccess) settings.lastRefresh = clock.now()
         sync()
         return result
     }

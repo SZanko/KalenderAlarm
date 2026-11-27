@@ -9,7 +9,7 @@ import at.zanko.kalenderwecker.alarm.DayAlarm
 /** Uses `setAlarmClock`, which rings in Doze and shows in the status bar like a clock app's alarm. */
 class AndroidAlarmScheduler(private val context: Context) : AlarmScheduler {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
-    private val prefs = context.getSharedPreferences("alarm_scheduler", Context.MODE_PRIVATE)
+    private val prefs = deviceProtectedPrefs(context, "alarm_scheduler")
 
     override suspend fun schedule(alarms: List<DayAlarm>) {
         prefs.getStringSet(KEY_CODES, emptySet()).orEmpty().forEach { code ->

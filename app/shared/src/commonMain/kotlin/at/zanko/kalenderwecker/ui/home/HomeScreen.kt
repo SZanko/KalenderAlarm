@@ -24,6 +24,7 @@ import androidx.compose.material.icons.rounded.AlarmOff
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Warning
 import androidx.compose.material.icons.rounded.WbSunny
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -133,6 +134,20 @@ private fun DayList(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item { banner() }
+        state.schedulingError?.let { error ->
+            item { WarningCard("Alarms could not be set and may not ring", error) }
+        }
+        if (state.scheduleStale) {
+            item {
+                WarningCard(
+                    "Schedule not updated",
+                    state.lastRefresh?.let {
+                        "Last successful update: ${formatDayHeader(it.toLocalDateTime(zone).date, today)} " +
+                            "${formatTime(it, zone)}. Check your TimeEdit link — alarms use the old schedule."
+                    } ?: "TimeEdit could not be reached yet. Check your link — alarms use the cached schedule.",
+                )
+            }
+        }
         item { NextAlarmCard(state.nextAlarm, state.offsetMinutes, zone, today) }
         state.sections.forEach { section ->
             stickyHeader(key = "h-${section.date}") {
@@ -140,6 +155,25 @@ private fun DayList(
             }
             items(section.appointments, key = { "a-${section.date}-${it.key}" }) {
                 AppointmentCard(it, zone)
+            }
+        }
+    }
+}
+
+@Composable
+private fun WarningCard(title: String, detail: String) {
+    Surface(
+        color = MaterialTheme.colorScheme.errorContainer,
+        contentColor = MaterialTheme.colorScheme.onErrorContainer,
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    ) {
+        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Rounded.Warning, contentDescription = null)
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text(detail, style = MaterialTheme.typography.bodySmall)
             }
         }
     }

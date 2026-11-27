@@ -43,7 +43,9 @@ END:VCALENDAR"""
 
 class RecordingScheduler : AlarmScheduler {
     val calls = mutableListOf<List<DayAlarm>>()
+    var failWith: String? = null
     override suspend fun schedule(alarms: List<DayAlarm>) {
+        failWith?.let { error(it) }
         calls += alarms
     }
 }

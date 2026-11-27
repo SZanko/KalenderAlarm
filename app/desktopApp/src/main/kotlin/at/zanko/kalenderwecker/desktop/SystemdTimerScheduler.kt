@@ -14,7 +14,9 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.name
 import kotlin.io.path.writeText
 
-/** Keeps `~/.config/systemd/user` in sync with the planned alarms. */
+class SchedulingException(message: String) : Exception(message)
+
+/** Keeps `~/.config/systemd/user` in sync with the planned alarms. Throws [SchedulingException] if systemd refuses. */
 class SystemdTimerScheduler(
     private val unitDir: Path = defaultUnitDir(),
     private val runner: CommandRunner,
@@ -42,10 +44,14 @@ class SystemdTimerScheduler(
         unitDir.resolve("${SystemdUnits.REFRESH}.timer").writeText(SystemdUnits.refreshTimer())
         unitDir.resolve("${SystemdUnits.REFRESH}.service").writeText(SystemdUnits.refreshService(exec, env))
 
-        runner.run("systemctl", "--user", "daemon-reload")
+        runChecked("systemctl", "--user", "daemon-reload")
         val timers = wanted.map { "$it.timer" } + "${SystemdUnits.REFRESH}.timer"
-        runner.run("systemctl", "--user", "enable", "--now", *timers.toTypedArray())
-        Unit
+        runChecked("systemctl", "--user", "enable", "--now", *timers.toTypedArray())
+    }
+
+    private fun runChecked(vararg cmd: String) {
+        val code = runner.run(*cmd)
+        if (code != 0) throw SchedulingException("`${cmd.take(4).joinToString(" ")}` failed with exit code $code")
     }
 
     private fun existingAlarmNames(): Set<String> =
