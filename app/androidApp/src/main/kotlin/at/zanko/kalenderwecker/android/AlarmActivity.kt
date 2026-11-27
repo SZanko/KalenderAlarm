@@ -30,12 +30,13 @@ class AlarmActivity : ComponentActivity() {
         val zone = TimeZone.currentSystemDefault()
         val now = Clock.System.now()
         val alarm = if (isUserUnlocked(this)) syncer.alarmFor(now.toLocalDateTime(zone).date) else null
+        val offsetMinutes = settings.settings.value.offsetMinutes
         setContent {
             KalenderWeckerTheme {
                 RingScreen(
                     time = formatTime(now, zone),
                     title = "Good morning",
-                    subtitle = alarm?.let { formatAlarmSubtitle(it, settings.settings.value.offsetMinutes) },
+                    subtitle = alarm?.let { formatAlarmSubtitle(it, offsetMinutes) },
                     onDismiss = { send(AlarmService.ACTION_DISMISS) },
                     onSnooze = { send(AlarmService.ACTION_SNOOZE) },
                 )

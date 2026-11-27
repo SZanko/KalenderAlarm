@@ -32,18 +32,23 @@ jobs:
       # Gradle dependency/build cache; works for ./gradlew run inside `nix develop`.
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Unit tests (core, shared, desktop, Android, server)
+      - name: Unit tests (core, shared, desktop, Android, server, browser)
         run: >
           nix develop --command ./gradlew --console=plain --continue
           :core:jvmTest
+          :core:jsBrowserTest
+          :core:wasmJsBrowserTest
+          :app:shared:jsBrowserTest
+          :app:shared:wasmJsBrowserTest
           :app:shared:jvmTest
           :app:desktopApp:test
           :app:androidApp:testDebugUnitTest
           :server:test
 
-      - name: Build Android APK and web targets
+      - name: Android lint, APK and web targets
         run: >
           nix develop --command ./gradlew --console=plain
+          :app:androidApp:lintDebug
           :app:androidApp:assembleDebug
           :app:shared:compileKotlinJs
           :app:shared:compileKotlinWasmJs

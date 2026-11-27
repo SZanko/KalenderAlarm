@@ -68,9 +68,13 @@ kotlin {
         }
         jsMain.dependencies {
             implementation(libs.ktor.clientJs)
+            // Named time zones (TimeEdit's TZID, Europe/Stockholm) need the tz database on JS/Wasm.
+            implementation(npm("@js-joda/timezone", "3.2.1"))
         }
         wasmJsMain.dependencies {
             implementation(libs.ktor.clientJs)
+            // Named time zones (TimeEdit's TZID, Europe/Stockholm) need the tz database on JS/Wasm.
+            implementation(npm("@js-joda/timezone", "3.2.1"))
         }
     }
 }

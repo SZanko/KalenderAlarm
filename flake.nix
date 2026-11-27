@@ -62,23 +62,32 @@
           ];
         in
         {
-          default = pkgs.mkShellNoCC {
-            JAVA_HOME = jdk.home;
-            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath desktopLibs;
-            packages = with pkgs; [
-              jdk
-              android-tools
-              gcc
-              gradle_9
-              kotlin
-              ncurses
-              patchelf
-              zlib
-              self.formatter.${system}
+          default = pkgs.mkShellNoCC (
+            {
+              JAVA_HOME = jdk.home;
+              LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath desktopLibs;
+              packages =
+                with pkgs;
+                [
+                  jdk
+                  android-tools
+                  gcc
+                  gradle_9
+                  kotlin
+                  ncurses
+                  patchelf
+                  zlib
+                  self.formatter.${system}
 
-              bun
-            ];
-          };
+                  bun
+                ]
+                # Headless browser for the Kotlin/JS and Wasm browser tests (Karma).
+                ++ pkgs.lib.optional pkgs.stdenv.isLinux chromium;
+            }
+            // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+              CHROME_BIN = pkgs.lib.getExe pkgs.chromium;
+            }
+          );
         }
       );
 
