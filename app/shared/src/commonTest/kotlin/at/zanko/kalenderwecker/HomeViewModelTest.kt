@@ -37,7 +37,7 @@ class HomeViewModelTest {
 
     @Test
     fun gIVEN_url_WHEN_created_THEN_refreshesAndShowsSections() = runTest(dispatcher) {
-        val graph = TestGraph()
+        val graph = TestGraph(httpDispatcher = dispatcher)
         val vm = vm(graph)
 
         advanceUntilIdle()
@@ -54,7 +54,7 @@ class HomeViewModelTest {
 
     @Test
     fun gIVEN_noUrl_WHEN_created_THEN_noRequestAndHasUrlFalse() = runTest(dispatcher) {
-        val graph = TestGraph(url = "")
+        val graph = TestGraph(url = "", httpDispatcher = dispatcher)
         val vm = vm(graph)
 
         advanceUntilIdle()
@@ -66,7 +66,7 @@ class HomeViewModelTest {
 
     @Test
     fun gIVEN_mondayToggledOff_WHEN_setAlarmEnabled_THEN_persistedUnscheduledAndNextAlarmMoves() = runTest(dispatcher) {
-        val graph = TestGraph()
+        val graph = TestGraph(httpDispatcher = dispatcher)
         val vm = vm(graph)
         advanceUntilIdle()
 
@@ -81,7 +81,7 @@ class HomeViewModelTest {
 
     @Test
     fun gIVEN_networkError_WHEN_refresh_THEN_errorShownAndNotRefreshing() = runTest(dispatcher) {
-        val graph = TestGraph().apply { status = HttpStatusCode.ServiceUnavailable }
+        val graph = TestGraph(httpDispatcher = dispatcher).apply { status = HttpStatusCode.ServiceUnavailable }
         val vm = vm(graph)
 
         vm.state.test {

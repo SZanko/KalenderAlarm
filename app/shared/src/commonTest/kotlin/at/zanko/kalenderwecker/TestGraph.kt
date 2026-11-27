@@ -10,9 +10,11 @@ import at.zanko.kalenderwecker.ics.BasicIcsParser
 import com.russhwolf.settings.MapSettings
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
+import io.ktor.client.engine.mock.MockEngineConfig
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.respondError
 import io.ktor.http.HttpStatusCode
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.datetime.TimeZone
 import kotlin.time.Clock
 import kotlin.time.Instant
@@ -51,7 +53,10 @@ class TestClock(var now: Instant) : Clock {
 }
 
 /** Real core objects over an in-memory store and a mock HTTP engine. */
-class TestGraph(url: String = "https://cloud.timeedit.net/ju/x.ics") {
+class TestGraph(
+    url: String = "https://cloud.timeedit.net/ju/x.ics",
+    httpDispatcher: CoroutineDispatcher? = null,
+) {
     val zone = TimeZone.of("Europe/Stockholm")
     var status = HttpStatusCode.OK
     var requests = 0
@@ -59,10 +64,17 @@ class TestGraph(url: String = "https://cloud.timeedit.net/ju/x.ics") {
     val scheduler = RecordingScheduler()
     val settings = SettingsRepository(MapSettings()).apply { update { it.copy(icsUrl = url) } }
     val calendar = CalendarRepository(
-        HttpClient(MockEngine {
-            requests++
-            if (status == HttpStatusCode.OK) respond(TEST_ICS) else respondError(status)
-        }),
+        HttpClient(
+            MockEngine(
+                MockEngineConfig().apply {
+                    httpDispatcher?.let { dispatcher = it }
+                    addHandler {
+                        requests++
+                        if (status == HttpStatusCode.OK) respond(TEST_ICS) else respondError(status)
+                    }
+                }
+            )
+        ),
         BasicIcsParser(),
         settings,
     ) { zone }
