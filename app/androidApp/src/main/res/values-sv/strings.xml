@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alarm_channel">Väckarlarm</string>
+    <string name="alarm_notification_title">Vakna!</string>
+    <string name="alarm_notification_text">KalenderWecker-larm</string>
+    <string name="action_snooze">Snooza</string>
+    <string name="action_dismiss">Stäng av</string>
+    <string name="permission_notifications">Aviseringar är avstängda – larmet kan inte ringa.</string>
+    <string name="permission_exact">Exakta larm är inte tillåtna – larmen kan ringa för sent.</string>
+    <string name="permission_full_screen">Helskärmslarm är inte tillåtna – ingen larmskärm på låsskärmen.</string>
+    <string name="permission_fix">Åtgärda i inställningarna</string>
+</resources>

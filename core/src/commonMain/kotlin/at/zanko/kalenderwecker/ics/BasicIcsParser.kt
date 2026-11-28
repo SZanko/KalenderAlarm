@@ -234,3 +234,9 @@ private fun parseProperty(
         params = params
     )
 }
+
+/** [CalendarParser] backed by the line-based RFC 5545 parser above. */
+class BasicIcsParser : CalendarParser {
+    override fun parse(ics: String): List<CalendarEvent> =
+        at.zanko.kalenderwecker.ics.parse(ics)
+}

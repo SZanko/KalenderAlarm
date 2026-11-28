@@ -1,3 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">KalenderWecker</string>
+    <string name="app_name" translatable="false">KalenderWecker</string>
+    <string name="alarm_channel">Wake-up alarms</string>
+    <string name="alarm_notification_title">Wake up!</string>
+    <string name="alarm_notification_text">KalenderWecker alarm</string>
+    <string name="action_snooze">Snooze</string>
+    <string name="action_dismiss">Dismiss</string>
+    <string name="permission_notifications">Notifications are off – the alarm can’t ring.</string>
+    <string name="permission_exact">Exact alarms are not allowed – alarms may ring late.</string>
+    <string name="permission_full_screen">Full-screen alarms are not allowed – no ring screen on the lock screen.</string>
+    <string name="permission_fix">Fix in settings</string>
 </resources>

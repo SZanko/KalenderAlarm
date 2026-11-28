@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Test & build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      # Same toolchain as local development: the flake's dev shell (JDK, Gradle, adb).
+      - uses: cachix/install-nix-action@v32
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check flake
+        run: nix flake check
+
+      # Gradle dependency/build cache; works for ./gradlew run inside `nix develop`.
+      - uses: gradle/actions/setup-gradle@v6
+
+      # Ubuntu 24.04 runners block unprivileged user namespaces via AppArmor, so the
+      # Nix-store Chromium falls back to a setuid sandbox it can't have and aborts.
+      # Re-allowing them keeps Chrome's sandbox on (no --no-sandbox needed).
+      - name: Allow user namespaces for headless Chromium
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
+      - name: Unit tests (core, shared, desktop, Android, server, browser)
+        run: >
+          nix develop --command ./gradlew --console=plain --continue
+          :core:jvmTest
+          :core:jsBrowserTest
+          :core:wasmJsBrowserTest
+          :app:shared:jsBrowserTest
+          :app:shared:wasmJsBrowserTest
+          :app:shared:jvmTest
+          :app:desktopApp:test
+          :app:androidApp:testDebugUnitTest
+          :server:test
+
+      - name: Android lint, APK and web targets
+        run: >
+          nix develop --command ./gradlew --console=plain
+          :app:androidApp:lintDebug
+          :app:androidApp:assembleDebug
+          :app:shared:compileKotlinJs
+          :app:shared:compileKotlinWasmJs
+          :app:webApp:compileKotlinJs
+
+      - name: Upload test reports
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 14
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: androidApp-debug
+          path: app/androidApp/build/outputs/apk/debug/*.apk
+          retention-days: 14

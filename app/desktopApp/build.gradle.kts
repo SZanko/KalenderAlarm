@@ -13,6 +13,12 @@ dependencies {
     implementation(libs.kotlinx.coroutinesSwing)
 
     implementation(libs.compose.uiToolingPreview)
+    implementation(libs.compose.material3)
+    implementation(libs.mp3spi)
+    implementation(libs.vorbisspi)
+
+    testImplementation(libs.kotlin.testJunit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
 
 compose.desktop {
@@ -23,6 +29,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "at.zanko.kalenderwecker"
             packageVersion = "1.0.0"
+            linux { iconFile.set(project.file("src/main/resources/kalenderwecker.png")) }
         }
     }
 }

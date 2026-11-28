@@ -14,6 +14,12 @@ dependencies {
     implementation(project(":app:shared"))
 
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.work.runtime)
+    implementation(libs.koin.android)
+    implementation(libs.compose.material3)
+    implementation(libs.filekit.dialogs.compose)
+
+    testImplementation(libs.kotlin.testJunit)
 
     implementation(libs.compose.uiToolingPreview)
     debugImplementation(libs.compose.uiTooling)
@@ -21,7 +27,11 @@ dependencies {
 
 android {
     namespace = "at.zanko.kalenderwecker"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk {
+        version = release(libs.versions.android.compileSdk.get().toInt()) {
+            minorApiLevel = libs.versions.android.compileSdkMinor.get().toInt()
+        }
+    }
 
     defaultConfig {
         applicationId = "at.zanko.kalenderwecker"
@@ -50,5 +60,9 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    androidResources {
+        // Lists en/de/sv (from res/values-*) so Android 13+ offers a per-app language setting.
+        generateLocaleConfig = true
     }
 }

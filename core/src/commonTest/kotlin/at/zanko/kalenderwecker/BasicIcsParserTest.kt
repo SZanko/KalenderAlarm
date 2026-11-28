@@ -5,7 +5,6 @@ import kotlin.test.Test
 import kotlin.test.assertTrue
 import com.goncalossilva.resources.Resource
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class BasicIcsParserTest {
     @Test

@@ -1,49 +1,43 @@
 package at.zanko.kalenderwecker
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import at.zanko.kalenderwecker.ui.LocalizedContent
+import at.zanko.kalenderwecker.ui.home.HomeScreen
+import at.zanko.kalenderwecker.ui.settings.SettingsScreen
+import at.zanko.kalenderwecker.ui.theme.KalenderWeckerTheme
 
-import kalenderwecker.app.shared.generated.resources.Res
-import kalenderwecker.app.shared.generated.resources.compose_multiplatform
-
+/**
+ * Root composable. [banner] lets a platform show status above the content
+ * (e.g. a missing Android permission or the desktop "app must stay open" note).
+ */
 @Composable
-@Preview
-fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
+fun App(banner: @Composable () -> Unit = {}) = LocalizedContent {
+    KalenderWeckerTheme {
+        var showSettings by rememberSaveable { mutableStateOf(false) }
+        PlatformBackHandler(enabled = showSettings) { showSettings = false }
+        AnimatedContent(
+            targetState = showSettings,
+            transitionSpec = {
+                val dir = if (targetState) 1 else -1
+                slideInHorizontally { it * dir } togetherWith slideOutHorizontally { -it * dir }
+            },
+        ) { settings ->
+            if (settings) {
+                SettingsScreen(onBack = { showSettings = false }, banner = banner)
+            } else {
+                HomeScreen(onOpenSettings = { showSettings = true }, banner = banner)
             }
         }
     }
 }
+
+@Composable
+expect fun PlatformBackHandler(enabled: Boolean, onBack: () -> Unit)

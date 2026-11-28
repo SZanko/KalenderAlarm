@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="home_subtitle">Vakna till lektionen</string>
+    <string name="settings">Inställningar</string>
+    <string name="back">Tillbaka</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Avbryt</string>
+    <string name="today">Idag</string>
+    <string name="tomorrow">Imorgon</string>
+    <string name="day_header_format">%1$s %2$d %3$s</string>
+    <string name="alarm_before">%1$s före %2$s</string>
+    <string name="alarm_fallback">Reservlarm – ingen morgonlektion</string>
+    <string name="warning_scheduling">Larmen kunde inte ställas in och kanske inte ringer</string>
+    <string name="stale_title">Schemat har inte uppdaterats</string>
+    <string name="stale_detail_since">Senaste lyckade uppdatering: %1$s %2$s. Kontrollera din TimeEdit-länk – larmen använder det gamla schemat.</string>
+    <string name="stale_detail_never">TimeEdit har inte kunnat nås än. Kontrollera din länk – larmen använder det sparade schemat.</string>
+    <string name="next_alarm">Nästa larm</string>
+    <string name="none_planned">Inget planerat</string>
+    <string name="empty_title">Inget schema än</string>
+    <string name="empty_body">Klistra in din TimeEdit-kalenderlänk för att planera väckarlarm.</string>
+    <string name="empty_action">Lägg till TimeEdit-länk</string>
+    <string name="error_refresh">Uppdateringen misslyckades</string>
+    <string name="error_no_url">Ingen TimeEdit-länk inställd</string>
+    <string name="error_invalid_url">Inte en TimeEdit-kalenderlänk</string>
+    <string name="error_network">Kunde inte nå TimeEdit</string>
+    <string name="error_http">TimeEdit svarade med HTTP %1$d</string>
+    <string name="error_parse">TimeEdit skickade en oläsbar kalender</string>
+    <string name="settings_calendar_section">TimeEdit-kalender</string>
+    <string name="settings_link_label">Kalenderlänk (.ics eller .html)</string>
+    <string name="settings_link_invalid">Det ser inte ut som en TimeEdit-kalenderlänk</string>
+    <string name="settings_link_help">TimeEdit → Prenumerera → kopiera länken</string>
+    <string name="settings_link_save">Spara länk</string>
+    <string name="settings_wake_section">Väckning före lektion</string>
+    <string name="settings_offset">%1$s före första morgonlektionen</string>
+    <string name="settings_morning_end">Morgonen slutar</string>
+    <string name="settings_fallback_section">Reservlarm</string>
+    <string name="settings_fallback_help">Ringer dagar utan morgonlektion</string>
+    <string name="settings_time">Tid</string>
+    <string name="settings_sound_section">Väckningsljud</string>
+    <string name="settings_sound_default">Standardlarmljud</string>
+    <string name="settings_sound_reset">Använd standardljud</string>
+    <string name="settings_sound_choose">Välj ljudfil…</string>
+    <string name="ring_title">God morgon</string>
+    <string name="ring_dismiss">Stäng av</string>
+    <string name="ring_snooze">Snooza 5 min</string>
+    <string name="ring_window_title">KalenderWecker – vakna!</string>
+    <string name="desktop_in_process">Ingen systemd-användarsession hittades – larmen ringer bara medan det här fönstret är öppet.</string>
+    <string name="settings_language_section">Språk</string>
+    <string name="language_system">Systemets språk</string>
+    <string-array name="weekdays_short">
+        <item>mån</item>
+        <item>tis</item>
+        <item>ons</item>
+        <item>tors</item>
+        <item>fre</item>
+        <item>lör</item>
+        <item>sön</item>
+    </string-array>
+    <string-array name="months_short">
+        <item>jan</item>
+        <item>feb</item>
+        <item>mars</item>
+        <item>apr</item>
+        <item>maj</item>
+        <item>juni</item>
+        <item>juli</item>
+        <item>aug</item>
+        <item>sep</item>
+        <item>okt</item>
+        <item>nov</item>
+        <item>dec</item>
+    </string-array>
+</resources>
