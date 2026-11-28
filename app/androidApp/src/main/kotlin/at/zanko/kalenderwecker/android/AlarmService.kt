@@ -21,7 +21,13 @@ import android.os.VibratorManager
 import android.util.Log
 import at.zanko.kalenderwecker.alarm.AlarmSyncer
 import at.zanko.kalenderwecker.data.SettingsRepository
+import at.zanko.kalenderwecker.R
 import at.zanko.kalenderwecker.ui.formatAlarmSubtitle
+import at.zanko.kalenderwecker.ui.loadFormatTexts
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.datetime.LocalDate
 import org.koin.android.ext.android.inject
 import java.io.File
@@ -37,6 +43,8 @@ class AlarmService : Service() {
     private var player: MediaPlayer? = null
     private val handler = Handler(Looper.getMainLooper())
     private var date: LocalDate? = null
+    private val scope = MainScope()
+    private var subtitleJob: Job? = null
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -68,10 +76,14 @@ class AlarmService : Service() {
         }
         if (unlocked) {
             syncer.alarmFor(day!!)?.let { alarm ->
-                getSystemService(NotificationManager::class.java).notify(
-                    NOTIFICATION_ID,
-                    notification(formatAlarmSubtitle(alarm, settings.settings.value.offsetMinutes)),
-                )
+                val offsetMinutes = settings.settings.value.offsetMinutes
+                // The localized texts load asynchronously; the generic notification is already showing.
+                subtitleJob = scope.launch {
+                    val subtitle = formatAlarmSubtitle(alarm, offsetMinutes, loadFormatTexts())
+                    if (player != null) {
+                        getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification(subtitle))
+                    }
+                }
             }
         }
         date = day
@@ -120,6 +132,7 @@ class AlarmService : Service() {
     }
 
     private fun stopRinging() {
+        subtitleJob?.cancel()
         handler.removeCallbacksAndMessages(null)
         player?.run { runCatching { stop() }; release() }
         player = null
@@ -130,6 +143,7 @@ class AlarmService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacksAndMessages(null)
+        scope.cancel()
         player?.release()
         super.onDestroy()
     }
@@ -137,7 +151,7 @@ class AlarmService : Service() {
     private fun notification(subtitle: String?): Notification {
         val nm = getSystemService(NotificationManager::class.java)
         nm.createNotificationChannel(
-            NotificationChannel(CHANNEL, "Wake-up alarms", NotificationManager.IMPORTANCE_HIGH).apply {
+            NotificationChannel(CHANNEL, getString(R.string.alarm_channel), NotificationManager.IMPORTANCE_HIGH).apply {
                 setSound(null, null)
                 enableVibration(false)
                 lockscreenVisibility = Notification.VISIBILITY_PUBLIC
@@ -149,15 +163,15 @@ class AlarmService : Service() {
         )
         return Notification.Builder(this, CHANNEL)
             .setSmallIcon(android.R.drawable.ic_lock_idle_alarm)
-            .setContentTitle("Wake up!")
-            .setContentText(subtitle ?: "KalenderWecker alarm")
+            .setContentTitle(getString(R.string.alarm_notification_title))
+            .setContentText(subtitle ?: getString(R.string.alarm_notification_text))
             .setCategory(Notification.CATEGORY_ALARM)
             .setOngoing(true)
             .setVisibility(Notification.VISIBILITY_PUBLIC)
             .setFullScreenIntent(fullScreen, true)
             .setContentIntent(fullScreen)
-            .addAction(Notification.Action.Builder(null, "Snooze", serviceIntent(this, ACTION_SNOOZE)).build())
-            .addAction(Notification.Action.Builder(null, "Dismiss", serviceIntent(this, ACTION_DISMISS)).build())
+            .addAction(Notification.Action.Builder(null, getString(R.string.action_snooze), serviceIntent(this, ACTION_SNOOZE)).build())
+            .addAction(Notification.Action.Builder(null, getString(R.string.action_dismiss), serviceIntent(this, ACTION_DISMISS)).build())
             .build()
     }
 

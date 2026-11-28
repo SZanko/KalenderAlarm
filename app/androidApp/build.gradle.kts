@@ -61,4 +61,8 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        // Lists en/de/sv (from res/values-*) so Android 13+ offers a per-app language setting.
+        generateLocaleConfig = true
+    }
 }

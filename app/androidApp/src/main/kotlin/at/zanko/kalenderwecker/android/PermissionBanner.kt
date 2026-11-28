@@ -21,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import at.zanko.kalenderwecker.R
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 
@@ -39,9 +41,9 @@ fun PermissionBanner() {
     val notifications = nm.areNotificationsEnabled()
     val fullScreen = Build.VERSION.SDK_INT < 34 || nm.canUseFullScreenIntent()
     val problem = when {
-        !notifications -> "Notifications are off – the alarm can't ring." to Settings.ACTION_APP_NOTIFICATION_SETTINGS
-        !exact -> "Exact alarms are not allowed – alarms may ring late." to Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
-        !fullScreen -> "Full-screen alarms are not allowed – no ring screen on the lock screen." to Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT
+        !notifications -> R.string.permission_notifications to Settings.ACTION_APP_NOTIFICATION_SETTINGS
+        !exact -> R.string.permission_exact to Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
+        !fullScreen -> R.string.permission_full_screen to Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT
         else -> null
     } ?: return
 
@@ -51,7 +53,7 @@ fun PermissionBanner() {
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
     ) {
         Column(Modifier.padding(16.dp)) {
-            Text(problem.first, style = MaterialTheme.typography.bodyMedium)
+            Text(stringResource(problem.first), style = MaterialTheme.typography.bodyMedium)
             TextButton(onClick = {
                 context.startActivity(
                     Intent(problem.second)
@@ -59,7 +61,7 @@ fun PermissionBanner() {
                         .putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 )
-            }) { Text("Fix in settings") }
+            }) { Text(stringResource(R.string.permission_fix)) }
         }
     }
 }

@@ -1,5 +1,9 @@
 package at.zanko.kalenderwecker.ui.ring
 
+import at.zanko.kalenderwecker.resources.Res
+import at.zanko.kalenderwecker.resources.ring_dismiss
+import at.zanko.kalenderwecker.resources.ring_snooze
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -100,7 +104,7 @@ fun RingScreen(
                 modifier = Modifier.fillMaxWidth().height(ButtonDefaults.LargeContainerHeight),
                 contentPadding = ButtonDefaults.contentPaddingFor(ButtonDefaults.LargeContainerHeight),
             ) {
-                Text("Dismiss", style = ButtonDefaults.textStyleFor(ButtonDefaults.LargeContainerHeight))
+                Text(stringResource(Res.string.ring_dismiss), style = ButtonDefaults.textStyleFor(ButtonDefaults.LargeContainerHeight))
             }
             Spacer(Modifier.height(16.dp))
             FilledTonalButton(
@@ -109,7 +113,7 @@ fun RingScreen(
             ) {
                 Icon(Icons.Rounded.Snooze, contentDescription = null)
                 Spacer(Modifier.size(ButtonDefaults.IconSpacing))
-                Text("Snooze 5 min")
+                Text(stringResource(Res.string.ring_snooze))
             }
         }
     }

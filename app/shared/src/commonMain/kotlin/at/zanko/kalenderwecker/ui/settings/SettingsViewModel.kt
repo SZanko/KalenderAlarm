@@ -6,6 +6,7 @@ import at.zanko.kalenderwecker.alarm.AlarmSettings
 import at.zanko.kalenderwecker.alarm.AlarmSyncer
 import at.zanko.kalenderwecker.data.SettingsRepository
 import at.zanko.kalenderwecker.data.normalizeTimeEditUrl
+import at.zanko.kalenderwecker.ui.AppLanguages
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,6 +48,12 @@ class SettingsViewModel(
     }
 
     fun setSound(uri: String?) = change { it.copy(soundUri = uri) }
+
+    /** [tag] of one of [AppLanguages.supported], or null for the system language. Alarms are unaffected. */
+    fun setLanguage(tag: String?) {
+        if (tag != null && AppLanguages.supported.none { it.tag == tag }) return
+        settings.update { it.copy(language = tag) }
+    }
 
     private fun change(transform: (AlarmSettings) -> AlarmSettings) {
         settings.update(transform)

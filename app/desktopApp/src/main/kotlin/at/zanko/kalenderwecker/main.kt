@@ -29,6 +29,10 @@ import at.zanko.kalenderwecker.desktop.desktopModule
 import at.zanko.kalenderwecker.desktop.parseArgs
 import at.zanko.kalenderwecker.desktop.shouldRing
 import at.zanko.kalenderwecker.di.initKoin
+import at.zanko.kalenderwecker.ui.LocalAppLocale
+import at.zanko.kalenderwecker.resources.Res
+import at.zanko.kalenderwecker.resources.desktop_in_process
+import org.jetbrains.compose.resources.stringResource
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -42,6 +46,7 @@ private val SNOOZE = 5.minutes
 
 fun main(args: Array<String>) {
     val koin = initKoin(desktopModule).koin
+    LocalAppLocale.applyAtStartup(koin.get<SettingsRepository>().settings.value.language)
     when (val mode = parseArgs(args)) {
         DesktopMode.Refresh -> {
             val syncer = koin.get<AlarmSyncer>()
@@ -131,7 +136,7 @@ private fun InProcessBanner() {
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
     ) {
         Text(
-            "systemd user session not found – alarms only ring while this window is open.",
+            stringResource(Res.string.desktop_in_process),
             modifier = Modifier.padding(16.dp),
             style = MaterialTheme.typography.bodyMedium,
         )

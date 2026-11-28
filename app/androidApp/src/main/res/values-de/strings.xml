@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alarm_channel">Weckrufe</string>
+    <string name="alarm_notification_title">Aufwachen!</string>
+    <string name="alarm_notification_text">KalenderWecker-Wecker</string>
+    <string name="action_snooze">Schlummern</string>
+    <string name="action_dismiss">Beenden</string>
+    <string name="permission_notifications">Benachrichtigungen sind aus – der Wecker kann nicht klingeln.</string>
+    <string name="permission_exact">Exakte Wecker sind nicht erlaubt – Wecker klingeln eventuell zu spät.</string>
+    <string name="permission_full_screen">Vollbild-Wecker sind nicht erlaubt – kein Weckbildschirm auf dem Sperrbildschirm.</string>
+    <string name="permission_fix">In den Einstellungen beheben</string>
+</resources>

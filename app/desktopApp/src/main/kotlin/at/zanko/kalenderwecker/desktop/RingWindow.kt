@@ -8,7 +8,13 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import at.zanko.kalenderwecker.alarm.DayAlarm
+import at.zanko.kalenderwecker.resources.Res
+import at.zanko.kalenderwecker.resources.ring_title
+import at.zanko.kalenderwecker.resources.ring_window_title
+import at.zanko.kalenderwecker.ui.LocalizedContent
 import at.zanko.kalenderwecker.ui.formatAlarmSubtitle
+import at.zanko.kalenderwecker.ui.rememberFormatTexts
+import org.jetbrains.compose.resources.stringResource
 import at.zanko.kalenderwecker.ui.formatTime
 import at.zanko.kalenderwecker.ui.ring.RingScreen
 import at.zanko.kalenderwecker.ui.theme.KalenderWeckerTheme
@@ -39,19 +45,21 @@ fun RingWindow(
     }
     Window(
         onCloseRequest = onDismiss,
-        title = "KalenderWecker – wake up!",
+        title = stringResource(Res.string.ring_window_title),
         alwaysOnTop = true,
         icon = appIcon,
         state = rememberWindowState(width = 420.dp, height = 640.dp, position = WindowPosition.Aligned(androidx.compose.ui.Alignment.Center)),
     ) {
-        KalenderWeckerTheme {
-            RingScreen(
-                time = formatTime(Clock.System.now(), TimeZone.currentSystemDefault()),
-                title = "Good morning",
-                subtitle = alarm?.let { formatAlarmSubtitle(it, offsetMinutes) },
-                onDismiss = onDismiss,
-                onSnooze = onSnooze,
-            )
+        LocalizedContent {
+            KalenderWeckerTheme {
+                RingScreen(
+                    time = formatTime(Clock.System.now(), TimeZone.currentSystemDefault()),
+                    title = stringResource(Res.string.ring_title),
+                    subtitle = alarm?.let { formatAlarmSubtitle(it, offsetMinutes, rememberFormatTexts()) },
+                    onDismiss = onDismiss,
+                    onSnooze = onSnooze,
+                )
+            }
         }
     }
 }

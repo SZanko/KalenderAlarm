@@ -62,7 +62,8 @@ kotlin {
             implementation(libs.compose.foundation)
             implementation(libs.compose.material3)
             implementation(libs.compose.ui)
-            implementation(libs.compose.components.resources)
+            // api: the public Res class (StringResource) is used by the Android and desktop apps.
+            api(libs.compose.components.resources)
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
@@ -89,4 +90,10 @@ kotlin {
 
 dependencies {
     androidRuntimeClasspath(libs.compose.uiTooling)
+}
+
+compose.resources {
+    // Used by the Android and desktop apps too (ring window, notification subtitle).
+    publicResClass = true
+    packageOfResClass = "at.zanko.kalenderwecker.resources"
 }

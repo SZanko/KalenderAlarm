@@ -61,6 +61,22 @@ import at.zanko.kalenderwecker.alarm.AlarmSource
 import at.zanko.kalenderwecker.alarm.DayAlarm
 import at.zanko.kalenderwecker.model.Appointment
 import at.zanko.kalenderwecker.ui.displayTitle
+import at.zanko.kalenderwecker.resources.Res
+import at.zanko.kalenderwecker.resources.empty_action
+import at.zanko.kalenderwecker.resources.empty_body
+import at.zanko.kalenderwecker.resources.empty_title
+import at.zanko.kalenderwecker.resources.home_subtitle
+import at.zanko.kalenderwecker.resources.next_alarm
+import at.zanko.kalenderwecker.resources.none_planned
+import at.zanko.kalenderwecker.resources.settings
+import at.zanko.kalenderwecker.resources.stale_detail_never
+import at.zanko.kalenderwecker.resources.stale_detail_since
+import at.zanko.kalenderwecker.resources.stale_title
+import at.zanko.kalenderwecker.resources.warning_scheduling
+import at.zanko.kalenderwecker.ui.FormatTexts
+import at.zanko.kalenderwecker.ui.localizedMessage
+import at.zanko.kalenderwecker.ui.rememberFormatTexts
+import org.jetbrains.compose.resources.stringResource
 import at.zanko.kalenderwecker.ui.formatAlarmSubtitle
 import at.zanko.kalenderwecker.ui.formatDayHeader
 import at.zanko.kalenderwecker.ui.formatTime
@@ -85,7 +101,7 @@ fun HomeScreen(
 
     LaunchedEffect(state.error) {
         state.error?.let {
-            snackbar.showSnackbar(it.message ?: "Refresh failed")
+            snackbar.showSnackbar(it.localizedMessage())
             viewModel.dismissError()
         }
     }
@@ -95,10 +111,10 @@ fun HomeScreen(
         topBar = {
             LargeFlexibleTopAppBar(
                 title = { Text("KalenderWecker") },
-                subtitle = { Text("Wake up for class") },
+                subtitle = { Text(stringResource(Res.string.home_subtitle)) },
                 actions = {
                     IconButton(onClick = onOpenSettings) {
-                        Icon(Icons.Rounded.Settings, contentDescription = "Settings")
+                        Icon(Icons.Rounded.Settings, contentDescription = stringResource(Res.string.settings))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -129,29 +145,33 @@ private fun DayList(
     onToggle: (LocalDate, Boolean) -> Unit,
     banner: @Composable () -> Unit,
 ) {
+    val texts = rememberFormatTexts()
     LazyColumn(
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         item { banner() }
         state.schedulingError?.let { error ->
-            item { WarningCard("Alarms could not be set and may not ring", error) }
+            item { WarningCard(stringResource(Res.string.warning_scheduling), error) }
         }
         if (state.scheduleStale) {
             item {
                 WarningCard(
-                    "Schedule not updated",
+                    stringResource(Res.string.stale_title),
                     state.lastRefresh?.let {
-                        "Last successful update: ${formatDayHeader(it.toLocalDateTime(zone).date, today)} " +
-                            "${formatTime(it, zone)}. Check your TimeEdit link — alarms use the old schedule."
-                    } ?: "TimeEdit could not be reached yet. Check your link — alarms use the cached schedule.",
+                        stringResource(
+                            Res.string.stale_detail_since,
+                            formatDayHeader(it.toLocalDateTime(zone).date, today, texts),
+                            formatTime(it, zone),
+                        )
+                    } ?: stringResource(Res.string.stale_detail_never),
                 )
             }
         }
-        item { NextAlarmCard(state.nextAlarm, state.offsetMinutes, zone, today) }
+        item { NextAlarmCard(state.nextAlarm, state.offsetMinutes, zone, today, texts) }
         state.sections.forEach { section ->
             stickyHeader(key = "h-${section.date}") {
-                DayHeader(section, state.offsetMinutes, zone, today, onToggle)
+                DayHeader(section, state.offsetMinutes, zone, today, texts, onToggle)
             }
             items(section.appointments, key = { "a-${section.date}-${it.key}" }) {
                 AppointmentCard(it, zone)
@@ -181,7 +201,7 @@ private fun WarningCard(title: String, detail: String) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun NextAlarmCard(alarm: DayAlarm?, offsetMinutes: Int, zone: TimeZone, today: LocalDate) {
+private fun NextAlarmCard(alarm: DayAlarm?, offsetMinutes: Int, zone: TimeZone, today: LocalDate, texts: FormatTexts) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -206,16 +226,16 @@ private fun NextAlarmCard(alarm: DayAlarm?, offsetMinutes: Int, zone: TimeZone, 
             }
             Spacer(Modifier.width(20.dp))
             Column {
-                Text("Next alarm", style = MaterialTheme.typography.labelLarge)
+                Text(stringResource(Res.string.next_alarm), style = MaterialTheme.typography.labelLarge)
                 if (alarm == null) {
-                    Text("None planned", style = MaterialTheme.typography.headlineMedium)
+                    Text(stringResource(Res.string.none_planned), style = MaterialTheme.typography.headlineMedium)
                 } else {
                     Text(
-                        "${formatDayHeader(alarm.date, today)} · ${formatTime(alarm.time, zone)}",
+                        "${formatDayHeader(alarm.date, today, texts)} · ${formatTime(alarm.time, zone)}",
                         style = MaterialTheme.typography.headlineMedium,
                         fontWeight = FontWeight.Bold,
                     )
-                    Text(formatAlarmSubtitle(alarm, offsetMinutes), style = MaterialTheme.typography.bodyMedium)
+                    Text(formatAlarmSubtitle(alarm, offsetMinutes, texts), style = MaterialTheme.typography.bodyMedium)
                 }
             }
         }
@@ -228,6 +248,7 @@ private fun DayHeader(
     offsetMinutes: Int,
     zone: TimeZone,
     today: LocalDate,
+    texts: FormatTexts,
     onToggle: (LocalDate, Boolean) -> Unit,
 ) {
     val alarm = section.alarm
@@ -237,7 +258,7 @@ private fun DayHeader(
     )
     Column(Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.surface).padding(top = 16.dp, bottom = 4.dp)) {
         Text(
-            formatDayHeader(section.date, today),
+            formatDayHeader(section.date, today, texts),
             style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.padding(start = 4.dp, bottom = 8.dp),
@@ -259,7 +280,7 @@ private fun DayHeader(
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold,
                         )
-                        Text(formatAlarmSubtitle(alarm, offsetMinutes), style = MaterialTheme.typography.bodySmall)
+                        Text(formatAlarmSubtitle(alarm, offsetMinutes, texts), style = MaterialTheme.typography.bodySmall)
                     }
                     Switch(checked = alarm.enabled, onCheckedChange = { onToggle(section.date, it) })
                 }
@@ -314,13 +335,13 @@ private fun EmptyState(onOpenSettings: () -> Unit) {
             }
         }
         Spacer(Modifier.height(24.dp))
-        Text("No schedule yet", style = MaterialTheme.typography.headlineSmall)
+        Text(stringResource(Res.string.empty_title), style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Paste your TimeEdit calendar link to plan wake-up alarms.",
+            stringResource(Res.string.empty_body),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onOpenSettings) { Text("Add TimeEdit link") }
+        Button(onClick = onOpenSettings) { Text(stringResource(Res.string.empty_action)) }
     }
 }

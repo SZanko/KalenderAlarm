@@ -60,6 +60,15 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun gIVEN_language_WHEN_newRepositoryOnSameStore_THEN_persistedAndSystemByDefault() {
+        assertNull(SettingsRepository(store).settings.value.language)
+
+        SettingsRepository(store).update { it.copy(language = "sv") }
+
+        assertEquals("sv", SettingsRepository(store).settings.value.language)
+    }
+
+    @Test
     fun gIVEN_corruptJson_WHEN_read_THEN_defaultsWithoutThrowing() {
         store.putString("settings", "{not json")
         store.putString("overrides", "[1,2")

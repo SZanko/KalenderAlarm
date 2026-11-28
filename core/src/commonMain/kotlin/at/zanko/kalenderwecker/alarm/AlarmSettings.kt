@@ -17,6 +17,8 @@ data class AlarmSettings(
     /** Platform-specific location of the chosen sound; null = default sound. */
     val soundUri: String? = null,
     val horizonDays: Int = 14,
+    /** UI language tag ("en", "de", "sv"); null = follow the system language. */
+    val language: String? = null,
 ) {
     companion object {
         val WEEKDAYS: Set<DayOfWeek> = setOf(

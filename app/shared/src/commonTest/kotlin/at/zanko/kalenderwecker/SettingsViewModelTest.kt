@@ -88,4 +88,29 @@ class SettingsViewModelTest {
         assertEquals(LocalTime(7, 0), graph.settings.settings.value.fallbackTime)
         assertEquals("/home/me/wake.mp3", graph.settings.settings.value.soundUri)
     }
+
+    @Test
+    fun gIVEN_supportedLanguage_WHEN_setLanguage_THEN_storedAndSystemClears() = runTest(dispatcher) {
+        vm.setLanguage("de")
+        assertEquals("de", graph.settings.settings.value.language)
+
+        vm.setLanguage(null)
+        assertEquals(null, graph.settings.settings.value.language)
+    }
+
+    @Test
+    fun gIVEN_unsupportedLanguage_WHEN_setLanguage_THEN_ignored() = runTest(dispatcher) {
+        vm.setLanguage("sv")
+        vm.setLanguage("fr")
+
+        assertEquals("sv", graph.settings.settings.value.language)
+    }
+
+    @Test
+    fun gIVEN_appLanguages_WHEN_listed_THEN_englishGermanSwedishInNativeNames() {
+        assertEquals(
+            listOf("en" to "English", "de" to "Deutsch", "sv" to "Svenska"),
+            at.zanko.kalenderwecker.ui.AppLanguages.supported.map { it.tag to it.nativeName },
+        )
+    }
 }

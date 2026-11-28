@@ -48,6 +48,31 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import at.zanko.kalenderwecker.resources.Res
+import at.zanko.kalenderwecker.resources.back
+import at.zanko.kalenderwecker.resources.cancel
+import at.zanko.kalenderwecker.resources.ok
+import at.zanko.kalenderwecker.resources.settings
+import at.zanko.kalenderwecker.resources.settings_calendar_section
+import at.zanko.kalenderwecker.resources.settings_fallback_help
+import at.zanko.kalenderwecker.resources.settings_fallback_section
+import at.zanko.kalenderwecker.resources.language_system
+import at.zanko.kalenderwecker.resources.settings_language_section
+import at.zanko.kalenderwecker.resources.settings_link_help
+import at.zanko.kalenderwecker.resources.settings_link_invalid
+import at.zanko.kalenderwecker.resources.settings_link_label
+import at.zanko.kalenderwecker.resources.settings_link_save
+import at.zanko.kalenderwecker.resources.settings_morning_end
+import at.zanko.kalenderwecker.resources.settings_offset
+import at.zanko.kalenderwecker.resources.settings_sound_choose
+import at.zanko.kalenderwecker.resources.settings_sound_default
+import at.zanko.kalenderwecker.resources.settings_sound_reset
+import at.zanko.kalenderwecker.resources.settings_sound_section
+import at.zanko.kalenderwecker.resources.settings_time
+import at.zanko.kalenderwecker.resources.settings_wake_section
+import at.zanko.kalenderwecker.ui.AppLanguages
+import at.zanko.kalenderwecker.ui.rememberFormatTexts
+import org.jetbrains.compose.resources.stringResource
 import at.zanko.kalenderwecker.ui.formatOffset
 import at.zanko.kalenderwecker.ui.formatTime
 import at.zanko.kalenderwecker.ui.persistableSoundUri
@@ -72,6 +97,7 @@ fun SettingsScreen(
     val urlError by viewModel.urlError.collectAsStateWithLifecycle()
     var url by rememberSaveable(settings.icsUrl) { mutableStateOf(settings.icsUrl) }
     var editing by remember { mutableStateOf<TimeField?>(null) }
+    val texts = rememberFormatTexts()
     val soundPicker = rememberFilePickerLauncher(type = FileKitType.File(SOUND_EXTENSIONS)) { file ->
         if (file != null) viewModel.setSound(file.persistableSoundUri())
     }
@@ -79,10 +105,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             MediumFlexibleTopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(Res.string.settings)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(Res.string.back))
                     }
                 },
             )
@@ -93,16 +119,17 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             banner()
-            Section("TimeEdit calendar") {
+            Section(stringResource(Res.string.settings_calendar_section)) {
                 OutlinedTextField(
                     value = url,
                     onValueChange = { url = it },
-                    label = { Text("Calendar link (.ics or .html)") },
+                    label = { Text(stringResource(Res.string.settings_link_label)) },
                     isError = urlError,
                     supportingText = {
                         Text(
-                            if (urlError) "That doesn't look like a TimeEdit calendar link"
-                            else "TimeEdit → Subscribe → copy the link"
+                            stringResource(
+                                if (urlError) Res.string.settings_link_invalid else Res.string.settings_link_help
+                            )
                         )
                     },
                     singleLine = true,
@@ -110,16 +137,16 @@ fun SettingsScreen(
                     keyboardActions = KeyboardActions(onDone = { viewModel.setUrl(url) }),
                     trailingIcon = {
                         IconButton(onClick = { viewModel.setUrl(url) }) {
-                            Icon(Icons.Rounded.Check, contentDescription = "Save link")
+                            Icon(Icons.Rounded.Check, contentDescription = stringResource(Res.string.settings_link_save))
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
 
-            Section("Wake-up before class") {
+            Section(stringResource(Res.string.settings_wake_section)) {
                 Text(
-                    formatOffset(settings.offsetMinutes) + " before the first morning class",
+                    stringResource(Res.string.settings_offset, formatOffset(settings.offsetMinutes)),
                     style = MaterialTheme.typography.titleMedium,
                 )
                 Slider(
@@ -128,23 +155,23 @@ fun SettingsScreen(
                     valueRange = 0f..180f,
                     steps = 180 / 5 - 1,
                 )
-                TimeRow("Morning ends at", settings.morningEnd) { editing = TimeField.MorningEnd }
+                TimeRow(stringResource(Res.string.settings_morning_end), settings.morningEnd) { editing = TimeField.MorningEnd }
             }
 
-            Section("Fallback alarm") {
+            Section(stringResource(Res.string.settings_fallback_section)) {
                 Text(
-                    "Rings on days without a morning class",
+                    stringResource(Res.string.settings_fallback_help),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                TimeRow("Time", settings.fallbackTime) { editing = TimeField.Fallback }
+                TimeRow(stringResource(Res.string.settings_time), settings.fallbackTime) { editing = TimeField.Fallback }
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     DayOfWeek.entries.forEach { day ->
                         val selected = day in settings.fallbackDays
                         FilterChip(
                             selected = selected,
                             onClick = { viewModel.toggleFallbackDay(day) },
-                            label = { Text(day.short()) },
+                            label = { Text(day.short(texts)) },
                             leadingIcon = if (selected) {
                                 { Icon(Icons.Rounded.Check, null, Modifier.size(FilterChipDefaults.IconSize)) }
                             } else null,
@@ -153,20 +180,38 @@ fun SettingsScreen(
                 }
             }
 
-            Section("Wake-up sound") {
+            Section(stringResource(Res.string.settings_sound_section)) {
                 ListItem(
                     leadingContent = { Icon(Icons.Rounded.MusicNote, contentDescription = null) },
                     trailingContent = {
                         if (settings.soundUri != null) {
                             IconButton(onClick = { viewModel.setSound(null) }) {
-                                Icon(Icons.Rounded.Close, contentDescription = "Use default sound")
+                                Icon(Icons.Rounded.Close, contentDescription = stringResource(Res.string.settings_sound_reset))
                             }
                         }
                     },
                 ) {
-                    Text(settings.soundUri?.substringAfterLast('/')?.substringAfterLast("%2F") ?: "Default alarm sound")
+                    Text(settings.soundUri?.substringAfterLast('/')?.substringAfterLast("%2F") ?: stringResource(Res.string.settings_sound_default))
                 }
-                OutlinedButton(onClick = { soundPicker.launch() }) { Text("Choose audio file…") }
+                OutlinedButton(onClick = { soundPicker.launch() }) { Text(stringResource(Res.string.settings_sound_choose)) }
+            }
+
+            Section(stringResource(Res.string.settings_language_section)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    val options = listOf(null to stringResource(Res.string.language_system)) +
+                        AppLanguages.supported.map { it.tag to it.nativeName }
+                    options.forEach { (tag, name) ->
+                        val selected = settings.language == tag
+                        FilterChip(
+                            selected = selected,
+                            onClick = { viewModel.setLanguage(tag) },
+                            label = { Text(name) },
+                            leadingIcon = if (selected) {
+                                { Icon(Icons.Rounded.Check, null, Modifier.size(FilterChipDefaults.IconSize)) }
+                            } else null,
+                        )
+                    }
+                }
             }
         }
     }
@@ -176,15 +221,15 @@ fun SettingsScreen(
         val pickerState = rememberTimePickerState(initial.hour, initial.minute, is24Hour = true)
         TimePickerDialog(
             onDismissRequest = { editing = null },
-            title = { Text(if (field == TimeField.Fallback) "Fallback alarm" else "Morning ends at") },
+            title = { Text(stringResource(if (field == TimeField.Fallback) Res.string.settings_fallback_section else Res.string.settings_morning_end)) },
             confirmButton = {
                 TextButton(onClick = {
                     val time = LocalTime(pickerState.hour, pickerState.minute)
                     if (field == TimeField.Fallback) viewModel.setFallbackTime(time) else viewModel.setMorningEnd(time)
                     editing = null
-                }) { Text("OK") }
+                }) { Text(stringResource(Res.string.ok)) }
             },
-            dismissButton = { TextButton(onClick = { editing = null }) { Text("Cancel") } },
+            dismissButton = { TextButton(onClick = { editing = null }) { Text(stringResource(Res.string.cancel)) } },
         ) {
             TimePicker(pickerState)
         }

@@ -13,6 +13,10 @@ Paste your TimeEdit calendar link (the `.ics` subscription link, the `.html` sch
 Each day's alarm can be switched on/off, you can pick any audio file as the wake-up sound, and
 alarms snooze for 5 minutes / stop by themselves after 10 minutes.
 
+The app is available in **English, German and Swedish**. It follows the system language;
+Settings → Language overrides it (on Android 13+ the choice also shows up in the system's
+per-app language setting).
+
 ![Desktop home screen](docs/superpowers/desktop-home.png)
 
 ## How alarms ring

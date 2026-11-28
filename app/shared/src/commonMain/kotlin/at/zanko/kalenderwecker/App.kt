@@ -9,6 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import at.zanko.kalenderwecker.ui.LocalizedContent
 import at.zanko.kalenderwecker.ui.home.HomeScreen
 import at.zanko.kalenderwecker.ui.settings.SettingsScreen
 import at.zanko.kalenderwecker.ui.theme.KalenderWeckerTheme
@@ -18,7 +19,7 @@ import at.zanko.kalenderwecker.ui.theme.KalenderWeckerTheme
  * (e.g. a missing Android permission or the desktop "app must stay open" note).
  */
 @Composable
-fun App(banner: @Composable () -> Unit = {}) {
+fun App(banner: @Composable () -> Unit = {}) = LocalizedContent {
     KalenderWeckerTheme {
         var showSettings by rememberSaveable { mutableStateOf(false) }
         PlatformBackHandler(enabled = showSettings) { showSettings = false }
