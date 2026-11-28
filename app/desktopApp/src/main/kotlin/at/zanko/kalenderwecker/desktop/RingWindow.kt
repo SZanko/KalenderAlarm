@@ -41,6 +41,7 @@ fun RingWindow(
         onCloseRequest = onDismiss,
         title = "KalenderWecker – wake up!",
         alwaysOnTop = true,
+        icon = appIcon,
         state = rememberWindowState(width = 420.dp, height = 640.dp, position = WindowPosition.Aligned(androidx.compose.ui.Alignment.Center)),
     ) {
         KalenderWeckerTheme {

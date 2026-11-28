@@ -1,3 +1,5 @@
+<img src="docs/logo/kalenderwecker.svg" width="96" alt="KalenderWecker logo" align="right">
+
 # KalenderWecker
 
 Wake-up alarms driven by your Jönköping University TimeEdit schedule.

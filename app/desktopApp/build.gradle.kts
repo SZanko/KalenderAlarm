@@ -29,6 +29,7 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "at.zanko.kalenderwecker"
             packageVersion = "1.0.0"
+            linux { iconFile.set(project.file("src/main/resources/kalenderwecker.png")) }
         }
     }
 }

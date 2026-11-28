@@ -13,6 +13,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
+import at.zanko.kalenderwecker.desktop.appIcon
 import androidx.compose.ui.window.application
 import at.zanko.kalenderwecker.alarm.AlarmSyncer
 import at.zanko.kalenderwecker.data.SettingsRepository
@@ -95,7 +96,7 @@ private fun mainWindow(koin: Koin) {
         val scope = rememberCoroutineScope()
         val ringing by requests.date.collectAsState()
         LaunchedEffect(Unit) { syncer.sync() }
-        Window(onCloseRequest = ::exitApplication, title = "KalenderWecker") {
+        Window(onCloseRequest = ::exitApplication, title = "KalenderWecker", icon = appIcon) {
             App(banner = { if (!systemd) InProcessBanner() })
         }
         ringing?.let { date ->
